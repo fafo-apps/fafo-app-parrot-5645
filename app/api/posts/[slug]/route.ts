@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/app/utils/pool';
 
-export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(req: NextRequest, context: { params: Promise<{ slug: string }> }) {
   try {
-    const { slug } = params;
+    const { slug } = await context.params;
     const { searchParams } = new URL(req.url);
     const includeDraft = searchParams.get('includeDraft') === 'true';
 
@@ -26,9 +26,9 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ slug: string }> }) {
   try {
-    const { slug } = params;
+    const { slug } = await context.params;
     const body = await req.json();
     const { title, content, cover_image_url, location, trip_date, status } = body || {};
 
@@ -57,9 +57,9 @@ export async function PUT(req: NextRequest, { params }: { params: { slug: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { slug: string } }) {
+export async function DELETE(_req: NextRequest, context: { params: Promise<{ slug: string }> }) {
   try {
-    const { slug } = params;
+    const { slug } = await context.params;
     const result = await pool.query('DELETE FROM posts WHERE slug = $1 RETURNING slug', [slug]);
     if (result.rowCount === 0) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
